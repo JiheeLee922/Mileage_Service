@@ -1,6 +1,12 @@
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://mogako-space.cshwr3mp4lrm.ap-northeast-2.rds.amazonaws.com:3306/mogako?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mariadb://mogako-space.cshwr3mp4lrm.ap-northeast-2.rds.amazonaws.com:3306/triple?serverTimezone=UTC&characterEncoding=UTF-8
     username: mogako
     password: mogakoadmin12!
+    
+    
+  jpa:
+    show-sql: true
+    
+    
