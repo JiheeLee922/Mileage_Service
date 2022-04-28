@@ -23,7 +23,10 @@ public class MileageController {
 		String returnMsg  = "success";
 		if("ADD".equals(reviewEvents.getAction())){
 			returnMsg = reviewService.addReview(reviewEvents).toString();
-			
+		}
+
+		if("DELETE".equals(reviewEvents.getAction())){
+			reviewService.deleteReview(reviewEvents);
 		}
 		return new ResponseEntity<String>(returnMsg ,HttpStatus.OK);
 	}

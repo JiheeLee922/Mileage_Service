@@ -7,15 +7,20 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @Table(name = "REVIEW")
+@NoArgsConstructor
+@DynamicUpdate
 public class ReviewEntity {
 
 	@Id
@@ -41,4 +46,15 @@ public class ReviewEntity {
 	private LocalDateTime updtDate;
 	
 	private LocalDateTime delDate;
+
+	@Builder
+	public ReviewEntity(String reviewId, String placeId, String userId, String content, String delYn) {
+		this.reviewId = reviewId;
+		this.placeId = placeId;
+		this.userId = userId;
+		this.content = content;
+		this.delYn = delYn;
+	}
+	
+	
 }
