@@ -1,7 +1,6 @@
 package com.triple.mileage.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -13,6 +12,7 @@ import com.triple.mileage.domain.entity.MileageHistoryEntity;
 import com.triple.mileage.domain.entity.ReviewEntity;
 import com.triple.mileage.domain.entity.ReviewPhotoMapEntity;
 import com.triple.mileage.domain.repository.MileageHistoryRepository;
+import com.triple.mileage.domain.repository.ReviewPhotoMapRepository;
 import com.triple.mileage.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService {
 
 	private final ReviewRepository reviewRepositroy;
+	private final ReviewPhotoMapRepository reviewPhotoMapRepositroy;
 	private final MileageHistoryRepository mileageHistoryRepository;
 	
 	
@@ -41,14 +42,14 @@ public class ReviewService {
 		
 		//ModelMapper modelMapper = new ModelMapper();
 		//ReviewEntity reviewEntity = modelMapper.map(review, ReviewEntity.class);
-		List<ReviewPhotoMapEntity> photoMapEntity =  review.getAttachedPhotoIds().stream().map(p -> {
+		review.getAttachedPhotoIds().forEach(p -> {
 			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
 												.reviewId(review.getReviewId())
 												.attachedPhotoId(p)
 												.delYn("N")
 												.build();
-			return photoEntity;
-		}).collect(Collectors.toList()); 
+			reviewPhotoMapRepositroy.save(photoEntity);
+		});
 		
 		ReviewEntity reviewEntity = ReviewEntity.builder()
 										.reviewId(review.getReviewId())
@@ -56,7 +57,6 @@ public class ReviewService {
 										.userId(review.getUserId())
 										.content(review.getContent())
 										.delYn("N")
-										.attachedPhotoIds(photoMapEntity) 
 										.build();
 		
 		
@@ -91,6 +91,8 @@ public class ReviewService {
 				.build();
 
 		reviewRepositroy.save(reviewEntity);
+		
+		reviewPhotoMapRepositroy.updateReviewPhotoMapDelY(review.getReviewId());
 		
 		
 		//���ϸ��� ȸ��
