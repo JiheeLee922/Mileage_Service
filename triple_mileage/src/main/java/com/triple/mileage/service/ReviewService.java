@@ -1,6 +1,7 @@
 package com.triple.mileage.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.triple.mileage.ReviewDTO;
 import com.triple.mileage.domain.entity.MileageHistoryEntity;
 import com.triple.mileage.domain.entity.ReviewEntity;
+import com.triple.mileage.domain.entity.ReviewPhotoMapEntity;
 import com.triple.mileage.domain.repository.MileageHistoryRepository;
 import com.triple.mileage.domain.repository.ReviewRepository;
 
@@ -26,19 +28,27 @@ public class ReviewService {
 	
 	public Integer addReview(ReviewDTO review) {
 		
-		// Àû¸³ÇÒ ¸¶ÀÏ¸®Áö °è»ê
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		int addMileages = 0;
 		
 		if(!StringUtils.isBlank(review.getContent()) && review.getContent().length() > 0 ) ++addMileages;
 		//Optional.of(review).map(ReviewDTO::getContent).isPresent();
 		
-		if(review.getAttachedPhotoIds().length > 0 ) ++addMileages;
+		if(review.getAttachedPhotoIds().size() > 0 ) ++addMileages;
 		
 		boolean boolIsFirstReview =  reviewRepositroy.existsByPlaceIdAndDelYn(review.getPlaceId(), "N");
 		if(!boolIsFirstReview) ++addMileages; 
 		
 		//ModelMapper modelMapper = new ModelMapper();
 		//ReviewEntity reviewEntity = modelMapper.map(review, ReviewEntity.class);
+		List<ReviewPhotoMapEntity> photoMapEntity =  review.getAttachedPhotoIds().stream().map(p -> {
+			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
+												.reviewId(review.getReviewId())
+												.attachedPhotoId(p)
+												.delYn("N")
+												.build();
+			return photoEntity;
+		}).collect(Collectors.toList()); 
 		
 		ReviewEntity reviewEntity = ReviewEntity.builder()
 										.reviewId(review.getReviewId())
@@ -46,14 +56,15 @@ public class ReviewService {
 										.userId(review.getUserId())
 										.content(review.getContent())
 										.delYn("N")
+										.attachedPhotoIds(photoMapEntity) 
 										.build();
 		
 		
-		//¸®ºä ÀúÀå
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		reviewRepositroy.save(reviewEntity);
 		
 		
-		//¸¶ÀÏ¸®Áö Àû¸³
+		//ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		MileageHistoryEntity mileageEntity = MileageHistoryEntity.builder()
 												.userId(review.getUserId())
 												.historyType("+")
@@ -70,7 +81,7 @@ public class ReviewService {
 	public void deleteReview(ReviewDTO review)
 	{
 		
-		//¸®ºä »èÁ¦
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ReviewEntity reviewEntity = ReviewEntity.builder()
 				.reviewId(review.getReviewId())
 				.placeId(review.getPlaceId())
@@ -82,7 +93,7 @@ public class ReviewService {
 		reviewRepositroy.save(reviewEntity);
 		
 		
-		//¸¶ÀÏ¸®Áö È¸¼ö
+		//ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ È¸ï¿½ï¿½
 		List<MileageHistoryEntity> mileageList =  mileageHistoryRepository.findByReviewIdAndUserId(review.getReviewId(), review.getUserId());
 		Integer totalMileage = mileageList.stream().mapToInt(m -> m.getMileageAmount() * Integer.parseInt(m.getHistoryType() + 1)).sum();
 		
