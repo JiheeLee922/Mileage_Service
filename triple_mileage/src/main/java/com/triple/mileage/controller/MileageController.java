@@ -20,6 +20,15 @@ import com.triple.mileage.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
+
+
+/**
+ * @packageName : com.triple.mileage.controller
+ * @author 		: dhkdn
+ * @date		: 2022. 5. 1.
+ * @description : 마일리지 지급, 마일리지 조회 컨트롤러
+ *
+ */
 @RestController
 @RequiredArgsConstructor
 public class MileageController 
@@ -29,30 +38,40 @@ public class MileageController
 	private final MileageService mileageService;
 
 	
+	/** 
+	 * @methodName 	: reviewEvents 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.04.28 
+	 * @description : 마일리지 지급 & 리뷰 저장 
+	 * @param reviewEvents
+	 * @return ResponseEntity
+	*/
 	@PostMapping("/events")
 	public ResponseEntity<BasicResponse> reviewEvents(@RequestBody ReviewDTO reviewEvents) 
 	{
-		
+		Map<String,Object> resultMap = new HashMap<>();
 		String returnMsg  = "Success";
 		int responseCode = 200;
+		int executeMileages = 0;
 		
 		try {
 			
 			if("ADD".equals(reviewEvents.getAction()))
 			{
-				reviewService.addReview(reviewEvents).toString();
+				executeMileages = reviewService.addReview(reviewEvents);
 			}
 	
 			if("UPDATE".equals(reviewEvents.getAction()))
 			{
-				reviewService.updateReview(reviewEvents);
+				executeMileages = reviewService.updateReview(reviewEvents);
 			}
 			
 			if("DELETE".equals(reviewEvents.getAction()))
 			{
-				reviewService.deleteReview(reviewEvents);
+				executeMileages = reviewService.deleteReview(reviewEvents);
 			}
 			
+			resultMap.put("executeMileages", executeMileages);
 		}
 		catch (PersistenceException e) 
 		{
@@ -67,15 +86,23 @@ public class MileageController
 			e.printStackTrace();
 		}
 		
-		return new ResponseEntity<BasicResponse>(BasicResponse.response(responseCode, returnMsg) ,HttpStatus.OK);
+		return new ResponseEntity<BasicResponse>(BasicResponse.response(responseCode, returnMsg, resultMap) ,HttpStatus.OK);
 	}
 	
 	
 	
+	/** 
+	 * @methodName 	: getMileages 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.05.01 
+	 * @description : 마일리지 조회
+	 * @param userId
+	 * @return 
+	*/
 	@GetMapping("/mileage/{userId}")
-	public ResponseEntity<BasicResponse> test(@PathVariable("userId") String userId)
+	public ResponseEntity<BasicResponse> getMileages(@PathVariable("userId") String userId)
 	{
-		
+		Map<String,Object> resultMap = new HashMap<>();
 		Integer userMileages = null;
 		String returnMsg  = "Success";
 		int responseCode = 200;
@@ -101,7 +128,7 @@ public class MileageController
 			e.printStackTrace();
 		}
 		
-		Map<String,Object> resultMap = new HashMap<>();
+		
 		resultMap.put("userId", userId);
 		resultMap.put("mileage", userMileages);
 		

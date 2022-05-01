@@ -18,6 +18,15 @@ import com.triple.mileage.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
+
+
+/**
+ * @packageName : com.triple.mileage.service
+ * @author 		: dhkdn
+ * @date		: 2022. 4. 28.
+ * @description : 리뷰 관련 서비스
+ *
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -28,6 +37,15 @@ public class ReviewService {
 	private final MileageHistoryRepository mileageHistoryRepository;
 	
 	
+	/** 
+	 * @methodName 	: addReview 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.04.28
+	 * @description : 리뷰 추가 서비스
+	 * @param review
+	 * @return 적립된 마일리지
+	 * @throws Exception 
+	*/
 	public Integer addReview(ReviewDTO review)  throws Exception
 	{
 		
@@ -77,7 +95,16 @@ public class ReviewService {
 	}
 	
 	
-	public void deleteReview(ReviewDTO review) throws Exception
+	/** 
+	 * @methodName 	: deleteReview 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.04.28 
+	 * @description : 리뷰 삭제 서비스
+	 * @param review
+	 * @return 소멸된 마일리지
+	 * @throws Exception 
+	*/
+	public Integer deleteReview(ReviewDTO review) throws Exception
 	{
 		
 		//리뷰 삭제
@@ -110,9 +137,21 @@ public class ReviewService {
 											.build();
 		mileageHistoryRepository.save(mileageEntity);
 		
+		return totalMileage * -1;
 	}
 	
-	public void updateReview(ReviewDTO review) throws Exception
+	
+	
+	/** 
+	 * @methodName 	: updateReview 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.05.01 
+	 * @description : 리뷰 수정 서비스
+	 * @param review
+	 * @return 처리된 마일리지
+	 * @throws Exception 
+	*/
+	public Integer updateReview(ReviewDTO review) throws Exception
 	{
 		int executeMileages = 0;
 		String historyType = "+";
@@ -179,6 +218,7 @@ public class ReviewService {
 			mileageHistoryRepository.save(mileageEntity);
 		}
 		
+		return executeMileages * Integer.parseInt(historyType + 1); 
 		
 	}
 }
