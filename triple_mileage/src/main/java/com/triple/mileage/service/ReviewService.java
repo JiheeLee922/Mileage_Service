@@ -1,5 +1,6 @@
 package com.triple.mileage.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -27,21 +28,19 @@ public class ReviewService {
 	private final MileageHistoryRepository mileageHistoryRepository;
 	
 	
-	public Integer addReview(ReviewDTO review) {
+	public Integer addReview(ReviewDTO review)  throws Exception
+	{
 		
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		// Àû¸³ÇÒ ¸¶ÀÏ¸®Áö °è»ê
 		int addMileages = 0;
 		
 		if(!StringUtils.isBlank(review.getContent()) && review.getContent().length() > 0 ) ++addMileages;
-		//Optional.of(review).map(ReviewDTO::getContent).isPresent();
 		
-		if(review.getAttachedPhotoIds().size() > 0 ) ++addMileages;
+		if(review.getAttachedPhotoIds() != null && review.getAttachedPhotoIds().size() > 0 ) ++addMileages;
 		
 		boolean boolIsFirstReview =  reviewRepositroy.existsByPlaceIdAndDelYn(review.getPlaceId(), "N");
 		if(!boolIsFirstReview) ++addMileages; 
 		
-		//ModelMapper modelMapper = new ModelMapper();
-		//ReviewEntity reviewEntity = modelMapper.map(review, ReviewEntity.class);
 		review.getAttachedPhotoIds().forEach(p -> {
 			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
 												.reviewId(review.getReviewId())
@@ -60,11 +59,11 @@ public class ReviewService {
 										.build();
 		
 		
-		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//¸®ºä ÀúÀå
 		reviewRepositroy.save(reviewEntity);
 		
 		
-		//ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//¸¶ÀÏ¸®Áö Àû¸³
 		MileageHistoryEntity mileageEntity = MileageHistoryEntity.builder()
 												.userId(review.getUserId())
 												.historyType("+")
@@ -78,24 +77,28 @@ public class ReviewService {
 	}
 	
 	
-	public void deleteReview(ReviewDTO review)
+	public void deleteReview(ReviewDTO review) throws Exception
 	{
 		
-		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//¸®ºä »èÁ¦
+		ReviewEntity beforeEntity = reviewRepositroy.findByReviewIdAndAttachedPhotoIdsDelYn(review.getReviewId(), "N");
+		
 		ReviewEntity reviewEntity = ReviewEntity.builder()
 				.reviewId(review.getReviewId())
-				.placeId(review.getPlaceId())
-				.userId(review.getUserId()) 
-				.content(review.getContent())
+				.placeId(beforeEntity.getPlaceId())
+				.userId(beforeEntity.getUserId()) 
+				.content(beforeEntity.getContent())
 				.delYn("Y")
-				.build();
+				.updtDate(beforeEntity.getUpdtDate())
+				.delDate(LocalDateTime.now()) 
+				.build(); 
 
 		reviewRepositroy.save(reviewEntity);
 		
 		reviewPhotoMapRepositroy.updateReviewPhotoMapDelY(review.getReviewId());
 		
 		
-		//ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ È¸ï¿½ï¿½
+		//¸¶ÀÏ¸®Áö È¸¼ö
 		List<MileageHistoryEntity> mileageList =  mileageHistoryRepository.findByReviewIdAndUserId(review.getReviewId(), review.getUserId());
 		Integer totalMileage = mileageList.stream().mapToInt(m -> m.getMileageAmount() * Integer.parseInt(m.getHistoryType() + 1)).sum();
 		
@@ -106,6 +109,76 @@ public class ReviewService {
 											.reviewId(review.getReviewId())
 											.build();
 		mileageHistoryRepository.save(mileageEntity);
+		
+	}
+	
+	public void updateReview(ReviewDTO review) throws Exception
+	{
+		int executeMileages = 0;
+		String historyType = "+";
+		
+		//¸¶ÀÏ¸®Áö Ãß°¡/È¸¼ö Ã¼Å©
+		ReviewEntity reviewEntity = reviewRepositroy.findByReviewIdAndAttachedPhotoIdsDelYn(review.getReviewId(), "N");
+		
+		if(reviewEntity.getAttachedPhotoIds().size() < 1 
+				&& review.getAttachedPhotoIds() != null && review.getAttachedPhotoIds().size() > 0) {
+			executeMileages = 1;
+		}
+		else if(reviewEntity.getAttachedPhotoIds().size() > 0 
+				&& (review.getAttachedPhotoIds() == null || review.getAttachedPhotoIds().size() < 1 )) {
+			executeMileages = 1;
+			historyType = "-";
+		}
+		
+		//»çÁø ¸®ºä Ã¼Å©
+		List<ReviewPhotoMapEntity> removePhoto = reviewEntity.getAttachedPhotoIds().stream().filter(r -> 
+					review.getAttachedPhotoIds().indexOf(r.getAttachedPhotoId()) <  0 ).toList();
+		
+		
+		review.getAttachedPhotoIds().forEach(p -> {
+			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
+												.reviewId(review.getReviewId())
+												.attachedPhotoId(p)
+												.delYn("N")
+												.build();
+			reviewPhotoMapRepositroy.save(photoEntity);
+		});
+		
+		//»èÁ¦ÇÒ »çÁø ¸®ºä »èÁ¦
+		removePhoto.forEach(rp -> {
+			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
+											.reviewId(review.getReviewId())
+											.attachedPhotoId(rp.getAttachedPhotoId())
+											.delYn("Y")
+											.delDate(LocalDateTime.now())
+											.build();
+			reviewPhotoMapRepositroy.save(photoEntity);
+		});
+		
+		//¸®ºä ÀúÀå
+		ReviewEntity reviewSaveEntity = ReviewEntity.builder()
+										.reviewId(review.getReviewId())
+										.placeId(review.getPlaceId())
+										.userId(review.getUserId())
+										.content(review.getContent())
+										.updtDate(LocalDateTime.now()) 
+										.delYn("N")
+										.build();
+		reviewRepositroy.save(reviewSaveEntity);
+		
+		
+		//¸¶ÀÏ¸®Áö Àû¸³
+		if(executeMileages != 0 ) {
+			
+			MileageHistoryEntity mileageEntity = MileageHistoryEntity.builder()
+													.userId(review.getUserId())
+													.historyType(historyType)
+													.mileageAmount(executeMileages)
+													.reviewId(review.getReviewId())
+													.build();
+			mileageHistoryRepository.save(mileageEntity);
+		}
+		
 		
 	}
 }

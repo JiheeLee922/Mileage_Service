@@ -1,5 +1,7 @@
 package com.triple.mileage.domain.repository;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,7 @@ import com.triple.mileage.domain.entity.id.ReviewPhotoMapID;
 public interface ReviewPhotoMapRepository extends JpaRepository<ReviewPhotoMapEntity, ReviewPhotoMapID> {
 
 	@Modifying(clearAutomatically =  true)
-	@Query(value = "UPDATE REVIEW_PHOTO_MAP r SET r.DEL_YN = 'Y' WHERE r.REVIEW_ID = :reviewId", nativeQuery = true)
+	@Transactional
+	@Query(value = "UPDATE review_photo_map r SET r.del_yn = 'Y' , del_date = now() WHERE r.review_id = :reviewId", nativeQuery = true)
 	int updateReviewPhotoMapDelY(@Param("reviewId") String reviewId);
 }

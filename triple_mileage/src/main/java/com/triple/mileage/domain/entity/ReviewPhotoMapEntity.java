@@ -48,10 +48,11 @@ public class ReviewPhotoMapEntity implements Serializable{
 	private LocalDateTime delDate;
 
 	@Builder
-	public ReviewPhotoMapEntity(String reviewId, String attachedPhotoId, String delYn) {
+	public ReviewPhotoMapEntity(String reviewId, String attachedPhotoId, String delYn, LocalDateTime delDate) {
 		this.reviewId = reviewId;
 		this.attachedPhotoId = attachedPhotoId;
 		this.delYn = delYn;
+		this.delDate = delDate;
 	}
 	
 	

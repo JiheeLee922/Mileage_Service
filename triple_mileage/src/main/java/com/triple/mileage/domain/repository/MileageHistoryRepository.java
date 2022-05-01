@@ -11,4 +11,6 @@ import com.triple.mileage.domain.entity.MileageHistoryEntity;
 public interface MileageHistoryRepository extends JpaRepository<MileageHistoryEntity, Long> {
 
 	public List<MileageHistoryEntity> findByReviewIdAndUserId(String reviewId, String userId);
+
+	public List<MileageHistoryEntity> findByUserId(String userId);
 }

@@ -46,7 +46,7 @@ public class ReviewEntity {
 	
 	
 	@OneToMany(fetch = FetchType.LAZY) 
-	@JoinColumn(name = "reviewId")
+	@JoinColumn(name = "reviewId", insertable = false, updatable = false)
 	private List<ReviewPhotoMapEntity> attachedPhotoIds = new ArrayList<>();
 	
 	
@@ -60,13 +60,15 @@ public class ReviewEntity {
 	private LocalDateTime delDate;
 
 	@Builder
-	public ReviewEntity(String reviewId, String placeId, String userId, String content, String delYn, List<ReviewPhotoMapEntity> attachedPhotoIds) {
+	public ReviewEntity(String reviewId, String placeId, String userId, String content, String delYn, List<ReviewPhotoMapEntity> attachedPhotoIds, LocalDateTime delDate, LocalDateTime updtDate) {
 		this.reviewId = reviewId;
 		this.placeId = placeId;
 		this.userId = userId;
 		this.content = content;
 		this.delYn = delYn;
 		this.attachedPhotoIds = attachedPhotoIds;
+		this.delDate = delDate;
+		this.updtDate = updtDate;
 	}
 	
 	
