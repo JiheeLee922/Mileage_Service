@@ -10,7 +10,3 @@ spring:
     show-sql: true
     
         
-mybatis:
-  config : mybatis-config.xml    
-  mapper-locations: mybatis/mapper/*.xml
-  

@@ -30,9 +30,6 @@ public class ReviewPhotoMapEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	@Id
-//	@ManyToOne
-//	@JoinColumn(name = "REVIEW_ID")
-//	private ReviewEntity review;
 	private String reviewId;
 	
 	@Id
