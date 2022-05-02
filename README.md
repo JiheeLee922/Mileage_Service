@@ -7,6 +7,7 @@
 + JPA Hibernate 5.6.8
 + gradle
 + MariaDB 10.5.13
++ JUnit5
 
 ### 실행방법
 ```
