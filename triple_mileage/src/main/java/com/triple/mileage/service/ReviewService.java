@@ -59,6 +59,8 @@ public class ReviewService {
 		boolean boolIsFirstReview =  reviewRepositroy.existsByPlaceIdAndDelYn(review.getPlaceId(), "N");
 		if(!boolIsFirstReview) ++addMileages; 
 		
+		
+		//리뷰&이미지 정보 저장
 		review.getAttachedPhotoIds().forEach(p -> {
 			ReviewPhotoMapEntity photoEntity = ReviewPhotoMapEntity.builder()
 												.reviewId(review.getReviewId())
@@ -75,9 +77,6 @@ public class ReviewService {
 										.content(review.getContent())
 										.delYn("N")
 										.build();
-		
-		
-		//리뷰 저장
 		reviewRepositroy.save(reviewEntity);
 		
 		
@@ -95,52 +94,6 @@ public class ReviewService {
 	}
 	
 	
-	/** 
-	 * @methodName 	: deleteReview 
-	 * @author 		: dhkdn
-	 * @date 		: 2022.04.28 
-	 * @description : 리뷰 삭제 서비스
-	 * @param review
-	 * @return 소멸된 마일리지
-	 * @throws Exception 
-	*/
-	public Integer deleteReview(ReviewDTO review) throws Exception
-	{
-		
-		//리뷰 삭제
-		ReviewEntity beforeEntity = reviewRepositroy.findByReviewIdAndAttachedPhotoIdsDelYn(review.getReviewId(), "N");
-		
-		ReviewEntity reviewEntity = ReviewEntity.builder()
-				.reviewId(review.getReviewId())
-				.placeId(beforeEntity.getPlaceId())
-				.userId(beforeEntity.getUserId()) 
-				.content(beforeEntity.getContent())
-				.delYn("Y")
-				.updtDate(beforeEntity.getUpdtDate())
-				.delDate(LocalDateTime.now()) 
-				.build(); 
-
-		reviewRepositroy.save(reviewEntity);
-		
-		reviewPhotoMapRepositroy.updateReviewPhotoMapDelY(review.getReviewId());
-		
-		
-		//마일리지 회수
-		List<MileageHistoryEntity> mileageList =  mileageHistoryRepository.findByReviewIdAndUserId(review.getReviewId(), review.getUserId());
-		Integer totalMileage = mileageList.stream().mapToInt(m -> m.getMileageAmount() * Integer.parseInt(m.getHistoryType() + 1)).sum();
-		
-		MileageHistoryEntity mileageEntity = MileageHistoryEntity.builder()
-											.userId(review.getUserId())
-											.historyType("-")
-											.mileageAmount(totalMileage)
-											.reviewId(review.getReviewId())
-											.build();
-		mileageHistoryRepository.save(mileageEntity);
-		
-		return totalMileage * -1;
-	}
-	
-	
 	
 	/** 
 	 * @methodName 	: updateReview 
@@ -155,6 +108,7 @@ public class ReviewService {
 	{
 		int executeMileages = 0;
 		String historyType = "+";
+		
 		
 		//마일리지 추가/회수 체크
 		ReviewEntity reviewEntity = reviewRepositroy.findByReviewIdAndAttachedPhotoIdsDelYn(review.getReviewId(), "N");
@@ -221,4 +175,55 @@ public class ReviewService {
 		return executeMileages * Integer.parseInt(historyType + 1); 
 		
 	}
+	
+	
+	
+	/** 
+	 * @methodName 	: deleteReview 
+	 * @author 		: dhkdn
+	 * @date 		: 2022.04.28 
+	 * @description : 리뷰 삭제 서비스
+	 * @param review
+	 * @return 소멸된 마일리지
+	 * @throws Exception 
+	*/
+	public Integer deleteReview(ReviewDTO review) throws Exception
+	{
+		
+		//리뷰 삭제
+		ReviewEntity beforeEntity = reviewRepositroy.findByReviewIdAndAttachedPhotoIdsDelYn(review.getReviewId(), "N");
+		
+		ReviewEntity reviewEntity = ReviewEntity.builder()
+				.reviewId(review.getReviewId())
+				.placeId(beforeEntity.getPlaceId())
+				.userId(beforeEntity.getUserId()) 
+				.content(beforeEntity.getContent())
+				.delYn("Y")
+				.updtDate(beforeEntity.getUpdtDate())
+				.delDate(LocalDateTime.now()) 
+				.build(); 
+
+		reviewRepositroy.save(reviewEntity);
+		
+		reviewPhotoMapRepositroy.updateReviewPhotoMapDelY(review.getReviewId());
+		
+		
+		//마일리지 회수
+		List<MileageHistoryEntity> mileageList =  mileageHistoryRepository.findByReviewIdAndUserId(review.getReviewId(), review.getUserId());
+		Integer totalMileage = mileageList.stream().mapToInt(m -> m.getMileageAmount() * Integer.parseInt(m.getHistoryType() + 1)).sum();
+		
+		MileageHistoryEntity mileageEntity = MileageHistoryEntity.builder()
+											.userId(review.getUserId())
+											.historyType("-")
+											.mileageAmount(totalMileage)
+											.reviewId(review.getReviewId())
+											.build();
+		mileageHistoryRepository.save(mileageEntity);
+		
+		return totalMileage * -1;
+	}
+	
+	
+	
+	
 }
