@@ -2,27 +2,30 @@ package com.triple.mileage.controller;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.triple.mileage.service.MileageService;
 import com.triple.mileage.service.ReviewService;
-
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -37,11 +40,6 @@ class MileageControllerTest {
 		mvc = MockMvcBuilders.standaloneSetup(new MileageController(reviewSerice, mileagSerce))
 				.addFilters(new CharacterEncodingFilter("UTF-8", true))
 				.build();
-	}
-
-	@Test
-	void testReviewEvents() {
-		
 	}
 
 	@Test
